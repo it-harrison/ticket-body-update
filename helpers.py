@@ -1,4 +1,4 @@
-def getDIText():
+def get_di_text():
   return '''
 - [ ] Review [Design Intent Guidance](https://depo-platform-documentation.scrollhelp.site/collaboration-cycle/design-intent) to understand what this touchpoint involves.
 - [ ] Schedule your Design Intent (with at least 2 business days lead time from now):
@@ -12,7 +12,7 @@ def getDIText():
 
 '''
 
-def getMPRText():
+def get_mpr_text():
   return '''
 Navigate to reference link: [Midpoint Review Guidance](https://depo-platform-documentation.scrollhelp.site/collaboration-cycle/midpoint-review)  
 - [ ] Schedule your Midpoint Review when ready:
@@ -28,7 +28,7 @@ Navigate to reference link: [Midpoint Review Guidance](https://depo-platform-doc
 
 '''
 
-def getSRText():
+def get_sr_text():
   return '''
 - Navigate to reference link: [Staging Review Guidance](https://depo-platform-documentation.scrollhelp.site/collaboration-cycle/staging-review)  
 - [ ] Schedule your Staging Review when ready:
