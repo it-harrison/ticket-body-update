@@ -39,7 +39,7 @@ def get_all_ticket_numbers():
     more = get_ticket_numbers(page, ticketNums)
     if more < 100:
       break
-    page+=1
+    page += 1
   return ticketNums
 
 # get a client to make async requests
@@ -58,29 +58,24 @@ async def patch_issue(number, errors):
       url = f'{URL}/{number}'
       response = await client.get(url)
       response.raise_for_status()
-      body = response.json()['body']
-      body = update_body(body)
+      _body = response.json()['body']
+      body = update_body(_body)
       patch_response = await client.patch(url, json={'body': body})
       patch_response.raise_for_status()
     except httpx._exceptions.HTTPStatusError:
-      errors.append(number)
+      errors.append((number, response.status_code))
 
 # get regex for each touchpoint
 def get_regex(touchpoint):
   return {
-    'di': r'(.*)(### Design Intent.*actions)(.*)(\*\*Design Intent artifacts)(.*)',
-    'mpr': r'(.*)(### Midpoint Review.*actions)(.*)(\*\*Midpoint Review artifacts)(.*)',
-    'sr': r'(.*)(### Staging Review.*actions)(.*)(\*\*Staging Review artifacts)(.*)'
+    'di': r'(.*### Design Intent.*actions)(.*)(\*\*Design Intent artifacts.*)',
+    'mpr': r'(.*### Midpoint Review.*actions)(.*)(\*\*Midpoint Review artifacts.*)',
+    'sr': r'(.*### Staging Review.*actions)(.*)(\*\*Staging Review artifacts.*)'
   }[touchpoint]
 
 # get the new text for each touchpoint
 def get_text(touchpoint):
-  if touchpoint == 'di':
-    return helpers.get_di_text()
-  elif touchpoint == 'mpr':
-    return helpers.get_mpr_text()
-  elif touchpoint == 'sr':
-    return helpers.get_sr_text()
+  return helpers.__dict__[f'get_{touchpoint}_text']()
 
 # update ticket body with new text for all touchpoints
 def update_body(body):
@@ -88,9 +83,7 @@ def update_body(body):
     regex = get_regex(touchpoint)
     matches = re.search(regex, body, re.DOTALL)
     if matches:
-      start = f'{matches.group(1)}{matches.group(2)}'
-      end = f'{matches.group(4)}{matches.group(5)}'
-      body = f'{start}{get_text(touchpoint)}{end}'
+      body = f'{matches.group(1)}{get_text(touchpoint)}{matches.group(3)}'
     else:
       continue
   return body
@@ -104,12 +97,11 @@ async def main():
     tasks = [asyncio.create_task(patch_wrapper(semaphore, number, errors)) 
              for number in ticket_numbers]
     await asyncio.gather(*tasks)
-
     if len(errors) > 0:
       print('the errors are \n', errors)
-    print('done!')
-  except httpx._exceptions.HTTPError or httpx._exceptions.HTTPStatusError:
-    print('could not get ticket numbers')
+    print('all tickets updated!')
+  except httpx._exceptions.HTTPError or httpx._exceptions.HTTPStatusError as e:
+    print(f'could not get ticket numbers: {e}')
   
 asyncio.run(main())
 
