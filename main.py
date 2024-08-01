@@ -1,92 +1,14 @@
 import asyncio
 import httpx
-import re
-import helpers
+from dotenv import load_dotenv
+from src.utils.patch_issue import patch_issue
+from  src.utils.get_all_cc_tickets import get_all_ticket_numbers
+# import the update function you want to use
+from src.update_vfs_scheduling.update_function import update_body
 
-TOKEN = '<your GH token>'
-URL = 'https://api.github.com/repos/department-of-veterans-affairs/va.gov-team/issues'
 INFLIGHT_LIMIT = 10
 
-# get the headers for a request to GH api
-def get_headers():
-  return {
-      'Authorization': f'Bearer {TOKEN}',
-      'Content-Type': 'application/json',
-      'Accept': 'application/vnd.github.v3+json'
-    }
-
-# get a page of CC request tickets
-def get_ticket_numbers(page, nums):
-  params = {
-    'per_page': 100,
-    'page': page,
-    'labels': ['CC-Request', 'collaboration-cycle']
-  }
-
-  with httpx.Client() as client:
-    resp = client.get(URL, headers=get_headers(), params=params)
-    resp.raise_for_status()
-    tickets = resp.json()
-    for ticket in tickets:
-      nums.append(ticket['number'])
-    return len(tickets)
-
-# aggregate all pages of CC request tickets
-def get_all_ticket_numbers():
-  ticketNums = []
-  page = 1
-  while True:
-    more = get_ticket_numbers(page, ticketNums)
-    if more < 100:
-      break
-    page += 1
-  return ticketNums
-
-# get a client to make async requests
-def get_async_client():
-  return httpx.AsyncClient(headers=get_headers())
-
-# wrapper to use the semaphore to update ticket
-async def patch_wrapper(semaphore, number, errors):
-  async with semaphore:
-    await patch_issue(number, errors)
-
-# update the ticket
-async def patch_issue(number, errors):
-  async with get_async_client() as client:
-    try:
-      url = f'{URL}/{number}'
-      response = await client.get(url)
-      response.raise_for_status()
-      _body = response.json()['body']
-      body = update_body(_body)
-      patch_response = await client.patch(url, json={'body': body})
-      patch_response.raise_for_status()
-    except httpx._exceptions.HTTPStatusError:
-      errors.append((number, response.status_code))
-
-# get regex for each touchpoint
-def get_regex(touchpoint):
-  return {
-    'di': r'(.*### Design Intent.*actions)(.*)(\*\*Design Intent artifacts.*)',
-    'mpr': r'(.*### Midpoint Review.*actions)(.*)(\*\*Midpoint Review artifacts.*)',
-    'sr': r'(.*### Staging Review.*actions)(.*)(\*\*Staging Review artifacts.*)'
-  }[touchpoint]
-
-# get the new text for each touchpoint
-def get_text(touchpoint):
-  return helpers.__dict__[f'get_{touchpoint}_text']()
-
-# update ticket body with new text for all touchpoints
-def update_body(body):
-  for touchpoint in ['di', 'mpr', 'sr']:
-    regex = get_regex(touchpoint)
-    matches = re.search(regex, body, re.DOTALL)
-    if matches:
-      body = f'{matches.group(1)}{get_text(touchpoint)}{matches.group(3)}'
-    else:
-      continue
-  return body
+load_dotenv()
 
 async def main():
   try:
@@ -94,8 +16,8 @@ async def main():
     errors = []
     # only have 10 requests in flight at a time
     semaphore = asyncio.Semaphore(INFLIGHT_LIMIT)
-    tasks = [asyncio.create_task(patch_wrapper(semaphore, number, errors)) 
-             for number in ticket_numbers]
+    tasks = [asyncio.create_task(patch_issue(semaphore, number, errors, update_body)) 
+      for number in ticket_numbers]
     await asyncio.gather(*tasks)
     if len(errors) > 0:
       print('the errors are \n', errors)
@@ -103,5 +25,7 @@ async def main():
   except httpx._exceptions.HTTPError or httpx._exceptions.HTTPStatusError as e:
     print(f'could not get ticket numbers: {e}')
   
-asyncio.run(main())
+
+if __name__ == "__main__":
+  asyncio.run(main())
 
