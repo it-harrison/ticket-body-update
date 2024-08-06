@@ -12,6 +12,7 @@ load_dotenv()
 
 async def main():
   try:
+    # pass a dictionary of params to override defaults
     ticket_numbers = get_all_ticket_numbers()
     errors = []
     # only have 10 requests in flight at a time
