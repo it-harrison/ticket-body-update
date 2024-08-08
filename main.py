@@ -12,7 +12,7 @@ load_dotenv()
 
 async def main():
   try:
-    # pass a dictionary of params to override defaults
+    # pass a dictionary of params to override default params
     ticket_numbers = get_all_ticket_numbers()
     errors = []
     # only have 10 requests in flight at a time
@@ -22,10 +22,10 @@ async def main():
     await asyncio.gather(*tasks)
     if len(errors) > 0:
       print('the errors are \n', errors)
-    print('all tickets updated!')
   except httpx._exceptions.HTTPError or httpx._exceptions.HTTPStatusError as e:
     print(f'could not get ticket numbers: {e}')
   
+  print('all tickets updated!')
 
 if __name__ == "__main__":
   asyncio.run(main())

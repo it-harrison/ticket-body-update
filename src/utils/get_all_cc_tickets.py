@@ -1,7 +1,7 @@
 import httpx
 from . requests import get_headers, URL
 
-def get_params(page, base=None):
+def get_params(page, base):
   default = {
     'per_page': 100,
     'page': page,
@@ -22,12 +22,12 @@ def get_ticket_numbers(ticket_numbers, params):
     return len(tickets)
 
 # aggregate all pages of CC request tickets
-def get_all_ticket_numbers(**kwargs):
+def get_all_ticket_numbers(params=None):
   ticket_numbers = []
   page = 1
   while True:
-    params = get_params(page, kwargs.get('params'))
-    more = get_ticket_numbers(ticket_numbers, params)
+    _params = get_params(page, params)
+    more = get_ticket_numbers(ticket_numbers, _params)
     if more < 100:
       break
     page += 1
