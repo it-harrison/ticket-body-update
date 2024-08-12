@@ -6,7 +6,7 @@ from  src.utils.get_all_cc_tickets import get_all_ticket_numbers
 # import the update function you want to use
 from src.update_vfs_scheduling.update_function import update_body
 
-INFLIGHT_LIMIT = 10
+INFLIGHT_LIMIT = 5
 
 load_dotenv()
 
@@ -15,7 +15,7 @@ async def main():
     # pass a dictionary of params to override default params
     ticket_numbers = get_all_ticket_numbers()
     errors = []
-    
+
     # only have 10 requests in flight at a time
     semaphore = asyncio.Semaphore(INFLIGHT_LIMIT)
     tasks = [asyncio.create_task(patch_issue(semaphore, number, errors, update_body)) 
@@ -30,4 +30,3 @@ async def main():
 
 if __name__ == "__main__":
   asyncio.run(main())
-
