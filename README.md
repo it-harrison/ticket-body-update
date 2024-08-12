@@ -9,3 +9,4 @@ Code to update the body of Gov Team CC Request Tickets
   * Mac: `source venv/bin/activate`
   * Windows: `.\venv\Scripts\activate`
 * you will see `(venv)` in your terminal. Then install packages: `pip install -r requirements.txt`
+* from root directory, `python3 main.py`

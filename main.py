@@ -15,6 +15,7 @@ async def main():
     # pass a dictionary of params to override default params
     ticket_numbers = get_all_ticket_numbers()
     errors = []
+    
     # only have 10 requests in flight at a time
     semaphore = asyncio.Semaphore(INFLIGHT_LIMIT)
     tasks = [asyncio.create_task(patch_issue(semaphore, number, errors, update_body)) 
