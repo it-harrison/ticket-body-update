@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from src.utils.patch_issue import patch_issue
 from  src.utils.get_all_cc_tickets import get_all_ticket_numbers
 # import the update function you want to use
-from src.update_vfs_scheduling.update_function import update_body
+from src.update_sr_artifacts.update_function import update_body
 
 INFLIGHT_LIMIT = 5
 

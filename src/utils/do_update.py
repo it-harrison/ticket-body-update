@@ -6,7 +6,9 @@ def get_regex(before, after):
   provide a before group and after group to target 
   a middle group for replacement
   '''
-  return rf"(.*{before})(.*)({after}.*)"
+  _before = re.escape(before)
+  _after = re.escape(after)
+  return rf"(.*)({_before})(.*)({_after})(.*)"
 
 
 def update(body, regex, new_text):
@@ -16,7 +18,7 @@ def update(body, regex, new_text):
   '''
   matches = re.search(regex, body, re.DOTALL)
   if matches:
-    return f'{matches.group(1)}{new_text}{matches.group(3)}'
+    return f'{matches.group(1)}{matches.group(2)}{new_text}{matches.group(4)}{matches.group(5)}'
   return body
 
 
