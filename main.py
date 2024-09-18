@@ -2,9 +2,8 @@ import asyncio
 import httpx
 from dotenv import load_dotenv
 from src.utils.patch_issue import patch_issue
-from  src.utils.get_all_cc_tickets import get_all_ticket_numbers
-# import the update function you want to use
-from src.update_sr_artifacts.update_function import update_body
+# import the "update_body" and "get_tickets" functions you want to use
+from src.update_sr_artifacts.update_function import update_body, get_tickets
 
 INFLIGHT_LIMIT = 5
 
@@ -12,10 +11,8 @@ load_dotenv()
 
 async def main():
   try:
-    # pass a dictionary of params to override default params
-    ticket_numbers = get_all_ticket_numbers()
+    ticket_numbers = get_tickets()
     errors = []
-
     # only have 10 requests in flight at a time
     semaphore = asyncio.Semaphore(INFLIGHT_LIMIT)
     tasks = [asyncio.create_task(patch_issue(semaphore, number, errors, update_body)) 

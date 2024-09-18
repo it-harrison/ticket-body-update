@@ -12,7 +12,8 @@ def get_params(page, base):
     'labels': ['CC-Request', 'collaboration-cycle']
   }
   if base:
-    return {**default, **base}
+    params = {**default, **base}
+    return params
   return default
 
 
@@ -27,8 +28,22 @@ def get_ticket_numbers(ticket_numbers, params):
       ticket_numbers.append(Ticket(ticket['number'], labels))
     return len(tickets)
 
+# exlude_labels is a list of labels that should not appear in the tickets returned
+def get_all_ticket_numbers(params=None, exclude_labels=None):
+  all_tickets = _get_all_ticket_numbers(params)
+  if exclude_labels:
+    _labels = ['CC-Request', 'collaboration-cycle']
+    exclude_tickets = []
+    for label in exclude_labels:
+      label_param = {'labels': [*_labels, label]}
+      _params = {**params, **label_param} if params else label_param
+      _tickets = _get_all_ticket_numbers(_params)
+      exclude_tickets += _tickets
+    return list(set(all_tickets) - set(exclude_tickets))
+  return all_tickets
+
 # aggregate all pages of CC request tickets
-def get_all_ticket_numbers(params=None):
+def _get_all_ticket_numbers(params=None):
   tickets = []
   page = 1
   while True:
