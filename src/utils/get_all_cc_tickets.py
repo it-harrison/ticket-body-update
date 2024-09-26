@@ -34,6 +34,7 @@ def get_all_ticket_numbers(params=None, exclude_labels=None):
   if exclude_labels:
     _labels = ['CC-Request', 'collaboration-cycle']
     exclude_tickets = []
+    # get list of all tickets we want to exclude
     for label in exclude_labels:
       label_param = {'labels': [*_labels, label]}
       _params = {**params, **label_param} if params else label_param
