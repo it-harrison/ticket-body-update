@@ -8,17 +8,18 @@ def get_regex(before, after):
   '''
   _before = re.escape(before)
   _after = re.escape(after)
-  return rf"(.*)({_before})(.*)({_after})(.*)"
+  return rf"(.*)({_before})(.*?)({_after})(.*)"
 
 
 def update(body, regex, new_text):
   '''
-  update a ticket's body with a regex that splits the body into three groups
+  update a ticket's body with a regex that splits the body into groups
   replace the middle group with new_text
   '''
   matches = re.search(regex, body, re.DOTALL)
-  if matches:
+  if matches and matches.re.groups == re.compile(regex).groups:
     return f'{matches.group(1)}{matches.group(2)}{new_text}{matches.group(4)}{matches.group(5)}'
-  return body
+  raise RegexError('could not find match in ticket body')
 
-
+class RegexError(Exception):
+  pass
