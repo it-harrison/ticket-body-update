@@ -3,7 +3,7 @@ import httpx
 from dotenv import load_dotenv
 from src.utils.patch_issue import patch_issue
 # import the "update_body" and "get_tickets" functions you want to use
-from src.update_sr_artifacts.update_function import update_body, get_tickets
+from src.update_mpr_artifacts.update_function import update_body, get_tickets
 
 INFLIGHT_LIMIT = 5
 
