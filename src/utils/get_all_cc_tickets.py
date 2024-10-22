@@ -6,13 +6,15 @@ Ticket = namedtuple("Ticket", "number labels")
 
 #params for GH request
 def get_params(page, base):
+  ccLabels = ['CC-Request', 'collaboration-cycle']
   default = {
     'per_page': 100,
     'page': page,
-    'labels': ['CC-Request', 'collaboration-cycle']
+    'labels': ccLabels
   }
   if base:
     params = {**default, **base}
+    params['labels'] = list(set(ccLabels + params['labels']))
     return params
   return default
 
