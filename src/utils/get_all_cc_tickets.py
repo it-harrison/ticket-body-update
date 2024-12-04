@@ -29,6 +29,7 @@ def get_ticket_numbers(ticket_numbers, params):
       labels = [label['name'] for label in ticket['labels']]
       ticket_numbers.append(Ticket(ticket['number'], labels))
     return len(tickets)
+
   
 # remove from a list of tickets unwanted tickets in another list
 def remove_unwanted_tickets(all, remove, ignore):
@@ -37,18 +38,21 @@ def remove_unwanted_tickets(all, remove, ignore):
 # exlude_labels is a list of labels that should not appear in the tickets returned
 # ignore_tickets is an ad hoc list of tickets that should not appear in tickets returned
 def get_all_ticket_numbers(params=None, exclude_labels=None, ignore_tickets=[]):
-  all_tickets = _get_all_ticket_numbers(params)
-  if exclude_labels:
-    _labels = ['CC-Request', 'collaboration-cycle']
-    exclude_tickets = []
-    # get list of all tickets we want to exclude
-    for label in exclude_labels:
-      label_param = {'labels': [*_labels, label]}
-      _params = {**params, **label_param} if params else label_param
-      _tickets = _get_all_ticket_numbers(_params)
-      exclude_tickets += _tickets
-    return remove_unwanted_tickets(all_tickets, exclude_tickets, ignore_tickets)
-  return remove_unwanted_tickets(all_tickets, [], ignore_tickets)
+  try:
+    all_tickets = _get_all_ticket_numbers(params)
+    if exclude_labels:
+      _labels = ['CC-Request', 'collaboration-cycle']
+      exclude_tickets = []
+      # get list of all tickets we want to exclude
+      for label in exclude_labels:
+        label_param = {'labels': [*_labels, label]}
+        _params = {**params, **label_param} if params else label_param
+        _tickets = _get_all_ticket_numbers(_params)
+        exclude_tickets += _tickets
+      return remove_unwanted_tickets(all_tickets, exclude_tickets, ignore_tickets)
+    return remove_unwanted_tickets(all_tickets, [], ignore_tickets)
+  except Exception as e:
+    raise GetTicketsError(f'could not get ticket numbers {e}')
 
 # aggregate all pages of CC request tickets
 def _get_all_ticket_numbers(params=None):
@@ -73,3 +77,7 @@ def get_tickets_with_all_labels(numbers, labels):
   
   cc_tickets = filter(check, numbers)
   return [ticket.number for ticket in cc_tickets]
+
+
+class GetTicketsError(Exception):
+  pass

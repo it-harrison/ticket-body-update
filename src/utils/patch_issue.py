@@ -1,6 +1,5 @@
 import httpx
 from .requests import URL, get_headers
-from .do_update import RegexError
 
 # update the body of a ticket by means of an update_func
 async def patch_issue(semaphore, number, errors, update_func):
@@ -16,5 +15,5 @@ async def patch_issue(semaphore, number, errors, update_func):
         patch_response.raise_for_status()
       except httpx._exceptions.HTTPStatusError:
         errors.append((number, response.status_code))
-      except RegexError:
-        errors.append((number, 'regex error'))
+      except Exception as e:
+        errors.append((number, e))

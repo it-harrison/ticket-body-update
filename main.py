@@ -1,9 +1,9 @@
 import asyncio
-import httpx
 from dotenv import load_dotenv
 from src.utils.patch_issue import patch_issue
 # import the "update_body" and "get_tickets" functions you want to use
-from src.update_mpr_artifacts.update_function import update_body, get_tickets
+from src.update_sr_artifacts_ii.update_function import update_body, get_tickets
+from src.utils.get_all_cc_tickets import GetTicketsError
 
 INFLIGHT_LIMIT = 5
 
@@ -18,12 +18,12 @@ async def main():
     tasks = [asyncio.create_task(patch_issue(semaphore, number, errors, update_body)) 
       for number in ticket_numbers]
     await asyncio.gather(*tasks)
-    if len(errors) > 0:
-      print('the errors are \n', errors)
-  except httpx._exceptions.HTTPError or httpx._exceptions.HTTPStatusError as e:
+  except GetTicketsError as e:
     print(f'could not get ticket numbers: {e}')
+  finally:
+    print(f'{len(ticket_numbers)} total tickets, {len(ticket_numbers) - len(errors)} updated, {len(errors)} errors:')
+    [print(error) for error in errors]
+      
   
-  print('all tickets updated!')
-
 if __name__ == "__main__":
   asyncio.run(main())

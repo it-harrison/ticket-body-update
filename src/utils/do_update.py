@@ -10,7 +10,6 @@ def get_regex(before, after):
   _after = re.escape(after)
   return rf"(.*)({_before})(.*?)({_after})(.*)"
 
-
 def update(body, regex, new_text):
   '''
   update a ticket's body with a regex that splits the body into groups
@@ -20,6 +19,18 @@ def update(body, regex, new_text):
   if matches and matches.re.groups == re.compile(regex).groups:
     return f'{matches.group(1)}{matches.group(2)}{new_text}{matches.group(4)}{matches.group(5)}'
   raise RegexError('could not find match in ticket body')
+
+def get_simple_regex(target):
+  _target = re.escape(target)
+  return rf"(.*)({_target})(.*)"
+
+def simple_update(body, regex, new_text):
+  matches = re.search(regex, body, re.DOTALL)
+  if matches and matches.re.groups == re.compile(regex).groups:
+    return f'{matches.group(1)}{matches.group(2)}{new_text}{matches.group(3)}'
+  raise RegexError('could not find match in ticket body')
+
+
 
 class RegexError(Exception):
   pass
